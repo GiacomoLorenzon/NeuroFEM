@@ -1,0 +1,34 @@
+#!/bin/bash
+#PBS -S /bin/bash
+
+# Put here the requests for the desired hardware
+# number of nodes (nodes), cores per node (ppn) 32 max, maximum time of execution (HH:MM:SS) 120 max queue (name_of_the_queue)
+#PBS -l nodes=1:ppn=31,walltime=120:00:00 -q gigatlong
+
+# Set the job name
+#PBS -N NOME_JOB
+
+# Set the output file and merge it to the sterr
+#PBS -o out-hostname-XyZ-N1x1-qsub.txt
+#PBS -j oe
+#PBS -e out-hostname-XyZ-N1x1.txt
+
+# Start the job in the current directory (PBS starts in the home folder)
+cd ${PBS_O_WORKDIR}
+
+sort ${PBS_NODEFILE} | uniq -c | \
+  awk '{ printf("%s\n", $2); }' > mpd.nodes
+#---------------------------------------------------------------------#
+# Now run the executable
+# Nella riga successiva si deve scrivere il/i comando/i di lancio
+# completo di redirezione di input e/o output se necessario
+# YOUR LAUNCH COMMAND BELOW completed with I/O redirection if needed
+module load gcc-glibc/9
+module load fenics
+module load pybind11
+
+mpirun -np 20 python3 Problem_Solver.py -f param.prm > /scratch/hpc/COGNOME/log.txt  2>&1
+
+#---------------------------------------------------------------------#
+
+date
